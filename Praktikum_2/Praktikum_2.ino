@@ -24,7 +24,7 @@ const unsigned long ADCMax = (1 << ADC_RESOLUTION) - 1;
 const int MAX_VOLTAGE = 5;
 
 //definieren der Pins
-const int ButtonPin = 2;
+const int ButtonPin = 8;
 
 const int PotPin = A0;
 Servo myServo;
@@ -46,7 +46,7 @@ byte degreeSymbol[8] = {
 
 int delay_time = 0;
 bool ButtonPinpressed = false;
-int minute = 60000;
+int minute = 10000;
 int millis_merker = 0;
 
 void handleInterrupt() {
@@ -66,6 +66,8 @@ void setup() {
   myServo.attach(3);
 
   lcd.begin(2, 16, LCD_5x8DOTS, WireMaster);
+  lcd.setCursor(0, 0);
+  lcd.print("Temperature:");
   lcd.createChar(0, degreeSymbol);
 }
 

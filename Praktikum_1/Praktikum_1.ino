@@ -148,23 +148,25 @@ void loop() {
 
 
   /************** Temperatursensor *******************/
+  float R0 = 100000.0;
+  float B = 4250.0;
 
   int rawValue = analogRead(tempSensorPin);
-  float R = (1023.0 - rawValue) * 10000 / rawValue;
-  float temperature = 1 / (log(R / 10000) / 3975 + 1 / 298.15);
-  temperature -= 273.15;  // Umrechnung von Kelvin in Grad Celsius
+  rawValue =(float) (rawValue/5) * 3.3;
+  float resistance = (float)(1023.0 - rawValue) * R0 / rawValue;
+  float temperature = 1 / (log(resistance / R0) / B + 1 / 298.15);
+  temperature = temperature - 273.15;  // Umrechnung von Kelvin in Grad Celsius
   Serial.print("Temperatur: ");
   Serial.print(temperature);
   Serial.println(" °C");
 
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("Temperatur: ");
-
+  lcd.print("Temperature: ");
   lcd.setCursor(0, 1);
   lcd.print(temperature);
-  lcd.setCursor(5, 1);
-  lcd.write((unsigned char)0);  // Zeige das benutzerdefinierte Grad-Symbol an
+  Serial.println(temperature);
+  lcd.write((unsigned char) 0);
   lcd.print("C");
 
   delay(1000);
