@@ -7,13 +7,13 @@
 #define DEBUG
 // green board
 #if defined(ARDUINO_ARCH_SAM)
-//#define MAX_VOLTAGE 3300
+#define MAX_VOLTAGE 3300
 #define WireMaster Wire1
 #define SETRES(x) analogReadResolution(x)
 // red board
 #elif defined(ARDUINO_ARCH_AVR)
 #define ADC_RESOLUTION 10
-//#define MAX_VOLTAGE 5000
+#define MAX_VOLTAGE 5000
 #define WireMaster Wire
 #define SETRES(x) \
   while (false) {}
@@ -21,12 +21,10 @@
 #else
 #error "Wrong Hardware"
 #endif
-
-
 const unsigned long ADCMax = (1 << ADC_RESOLUTION) - 1;
-const int MAX_VOLTAGE = 5;
+
 //definieren der Pins
-const int ButtonPin = 8;
+const int ButtonPin = 2;
 const int PotPin = A0;
 Servo myServo;
 
@@ -46,15 +44,13 @@ byte degreeSymbol[8] = {
   0b00000
 };
 
-void Timing();
 void Servo();
 void Temperature();
-void Scroll();
+float SollTemperature();
 
-Task task1(1500, TASK_FOREVER, &Timing);
-Task task2(20, TASK_FOREVER, &Servo);
-Task task3(2000, TASK_FOREVER, &Temperature);
-Task task4(200, TASK_FOREVER, &Scroll);
+Task task1(1500, TASK_FOREVER, &Servo);
+Task task2(2000, TASK_FOREVER, &Temperature);
+
 
 Scheduler runner;
 
@@ -65,7 +61,6 @@ void handleInterrupt() {
 
 void setup() {
   Serial.begin(115200);
-
   pinMode(13, OUTPUT);
   pinMode(ButtonPin, INPUT);
 
@@ -81,12 +76,12 @@ void setup() {
   runner.addTask(task1);
   runner.addTask(task2);
   runner.addTask(task3);
-  runner.addTask(task4);
+  
 
   task1.enable();
   task2.enable();
   task3.enable();
-  task4.enable();
+
 
   attachInterrupt(digitalPinToInterrupt(ButtonPin), handleInterrupt, RISING);
 }
@@ -96,21 +91,16 @@ void loop() {
 
   runner.execute();
 
-  Serial.print(millis());
+  /*Serial.print(millis());
   Serial.print(" --> in Sekunden = ");
   float timer = millis();
   Serial.print(timer / 1000);
-  Serial.println("s");
+  Serial.println("s");*/
 }
 
 /************************************
 *             Funktionen            *
 ************************************/
-
-void Timing() {
-  digitalWrite(13, LED_STATUS);
-  LED_STATUS = !LED_STATUS;
-}
 
 void Servo() {
   if (BUTTON_STATUS == HIGH) {
@@ -131,28 +121,34 @@ void Temperature() {
       rawValue = (float)(rawValue / 5) * 3.3;
     }
     float resistance = (float)(1023.0 - rawValue) * R0 / rawValue;
-    float temperature = 1 / (log(resistance / R0) / B + 1 / 298.15);
-    temperature = temperature - 273.15;  // Umrechnung von Kelvin in Grad Celsius
+    float ist_temperature = 1 / (log(resistance / R0) / B + 1 / 298.15);
+    ist_temperature = ist_temperature - 273.15;  // Umrechnung von Kelvin in Grad Celsius
 
     //Ausgabe auf dem LCD Display
     lcd.setCursor(16, 0);
-    lcd.print("Temperature: ");
-    if (temperature > 25.0) {
+    lcd.print("IST-Temp: ");
+    if (ist_temperature > 25.0) {
       lcd.setRGB(255, 165, 0);
     }
-    if (temperature < 25.0) {
+    if (ist_temperature < 25.0) {
       lcd.setColorWhite();
     }
-    lcd.print(temperature);
-    Serial.println(temperature);
+    lcd.print(ist_temperature);
+    Serial.println(ist_temperature);
     lcd.write((unsigned char)0);
     lcd.print("C");
   } else {
     lcd.clear();
     lcd.setRGB(0, 0, 0);
+
+
+
   }
 }
 
-void Scroll(){
-  lcd.scrollDisplayLeft();
+
+float SollTemperature(){
+  float ValuePotentiometer = analogRead(PotPin);
+  float soll_temperature = map(ValuePotentiometer, 0, 1023, 15, 35);
+  return soll_temperature;
 }

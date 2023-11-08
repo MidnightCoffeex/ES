@@ -3,16 +3,17 @@
 #include <Wire.h>
 #include "rgb_lcd.h"
 
+
 #define DEBUG
 // green board
 #if defined(ARDUINO_ARCH_SAM)
-//#define MAX_VOLTAGE 3300
+#define MAX_VOLTAGE 3300
 #define WireMaster Wire1
 #define SETRES(x) analogReadResolution(x)
 // red board
 #elif defined(ARDUINO_ARCH_AVR)
 #define ADC_RESOLUTION 10
-//#define MAX_VOLTAGE 5000
+#define MAX_VOLTAGE 5000
 #define WireMaster Wire
 #define SETRES(x) while(false){}
 // untested
@@ -21,15 +22,12 @@
 #endif
 const unsigned long ADCMax = (1 << ADC_RESOLUTION) - 1;
 
-const int MAX_VOLTAGE = 5;
-
 //definieren der Pins
-const int ButtonPin = 8;
-
+const int ButtonPin = 2;
 const int PotPin = A0;
 Servo myServo;
-
 const int TempPin = A1;
+
 rgb_lcd lcd;
 // Grad-Zeichen erstellen
 byte degreeSymbol[8] = {
@@ -54,13 +52,14 @@ void handleInterrupt() {
     ButtonPinpressed = true;
     millis_merker = millis();
   }
+  Serial.println("Button pressed");
 }
 
 void setup() {
   Serial.begin(115200);
 
   pinMode(13, OUTPUT);
-  pinMode(ButtonPin, INPUT);
+  pinMode(ButtonPin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(ButtonPin), handleInterrupt, RISING);
 
   myServo.attach(3);
@@ -73,6 +72,9 @@ void setup() {
 
 
 void loop() {
+
+  Serial.print("Button state: ");
+  Serial.println(digitalRead(ButtonPin));
   
   Timing();
   Servo();

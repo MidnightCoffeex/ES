@@ -25,7 +25,7 @@ byte degreeSymbol[8] = {
 
 void setup() {
   // set up the LCD's number of columns and rows:
-  lcd.begin(16, 2, LCD_5x8DOTS, Wire1);
+  lcd.begin(16, 2, LCD_5x8DOTS, WireMaster);
 
   lcd.createChar(0, degreeSymbol);  // Erstelle das benutzerdefinierte Zeichen
 
@@ -152,7 +152,7 @@ void loop() {
   float B = 4250.0;
 
   int rawValue = analogRead(tempSensorPin);
-  rawValue =(float) (rawValue/5) * 3.3;
+  //rawValue =(float) (rawValue/5) * 3.3;
   float resistance = (float)(1023.0 - rawValue) * R0 / rawValue;
   float temperature = 1 / (log(resistance / R0) / B + 1 / 298.15);
   temperature = temperature - 273.15;  // Umrechnung von Kelvin in Grad Celsius
